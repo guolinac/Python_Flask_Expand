@@ -16,22 +16,27 @@ api = Redprint('token')
 __author__ = 'guolin'
 
 
+# 登录其实就是获取token的操作
 @api.route('', methods=['POST'])
 def get_token():
+    # 验证
     form = ClientForm().validate_for_api()
+    # 字典，根据对应的数字码，区分不同客户端的类型
     promise = {
         ClientTypeEnum.USER_EMAIL: User.verify,
     }
+    # 密码的验证，也就是执行User.verify()方法
     identity = promise[ClientTypeEnum(form.type.data)](
         form.account.data,
         form.secret.data
     )
-    # Token
+    # 如果上方校验通过，则这里生成Token
     expiration = current_app.config['TOKEN_EXPIRATION']
     token = generate_auth_token(identity['uid'],
                                 form.type.data,
                                 identity['scope'],
                                 expiration)
+    # 用序列化器生成的token是byte类型的，要把它转为str
     t = {
         'token': token.decode('ascii')
     }
@@ -59,13 +64,15 @@ def get_token_info():
     return jsonify(r)
 
 
+# uid，ac_type客户端类型，scope权限作用域，expiration过期时间
 def generate_auth_token(uid, ac_type, scope=None,
                         expiration=7200):
-    """生成令牌"""
+    # 生成令牌，SECRET_KEY是加salt
     s = Serializer(current_app.config['SECRET_KEY'],
                    expires_in=expiration)
+    # 令牌序列化
     return s.dumps({
         'uid': uid,
         'type': ac_type.value,
-        'scope':scope
+        'scope': scope
     })

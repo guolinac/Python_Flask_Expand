@@ -21,10 +21,13 @@ def super_get_user(uid):
     return jsonify(user)
 
 
+# @auth.login_required是验证token的逻辑，如果客户的请求中有token，就调用verify_password(token, password)方法
+# 会打入@auth.verify_password这个装饰器修饰的函数内部，来验证
 @api.route('', methods=['GET'])
 @auth.login_required
 def get_user():
-    uid = g.user.id
+    # g 变量就类似于request，g是线程隔离的
+    uid = g.user.uid
     user = User.query.filter_by(id=uid).first_or_404()
     return jsonify(user)
 

@@ -52,7 +52,11 @@ def is_in_scope(scope, endpoint):
     # globals
     # v1.view_func   v1.module_name+view_func
     # v1.red_name+view_func
+
+    # 根据类的名字，动态创建一个对象，类似于Java的反射
+    # globals()可以把当前模块下所有的变量，包括类变成一个字典，globals()[scope]实际上是拿到了这个类
     scope = globals()[scope]()
+
     splits = endpoint.split('+')
     red_name = splits[0]
     if endpoint in scope.forbidden:

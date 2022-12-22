@@ -30,6 +30,7 @@ class User(Base):
     # @password.setter设置密码
     @password.setter
     def password(self, raw):
+        # hash加密
         self._password = generate_password_hash(raw)
 
     @staticmethod
@@ -44,7 +45,9 @@ class User(Base):
 
     @staticmethod
     def verify(email, password):
+        # 先查询是否有当前账号
         user = User.query.filter_by(email=email).first_or_404()
+        # 比对用户输入的密码和数据库的密码是否一致
         if not user.check_password(password):
             raise AuthFailed()
         scope = 'AdminScope' if user.auth == 2 else 'UserScope'
@@ -53,6 +56,7 @@ class User(Base):
     def check_password(self, raw):
         if not self._password:
             return False
+        # 看原始密码和数据库中的密码加密后是否相等
         return check_password_hash(self._password, raw)
 
     # def _set_fields(self):

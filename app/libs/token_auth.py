@@ -17,6 +17,7 @@ auth = HTTPBasicAuth()
 User = namedtuple('User', ['uid', 'ac_type', 'scope'])
 
 
+# 验证token
 @auth.verify_password
 def verify_password(token, password):
     # token
@@ -25,7 +26,7 @@ def verify_password(token, password):
     # account  guolin
     # 123456
     # key=Authorization
-    # value =basic base64(guolin:123456)
+    # value = basic base64(guolin:123456)
     user_info = verify_auth_token(token)
     if not user_info:
         return False
@@ -38,6 +39,7 @@ def verify_password(token, password):
 def verify_auth_token(token):
     s = Serializer(current_app.config['SECRET_KEY'])
     try:
+        # 解码token
         data = s.loads(token)
     except BadSignature:
         raise AuthFailed(msg='token is invalid',
@@ -48,7 +50,7 @@ def verify_auth_token(token):
     uid = data['uid']
     ac_type = data['type']
     scope = data['scope']
-    # request 视图函数
+    # request.endpoint 可以拿到这个视图函数
     allow = is_in_scope(scope, request.endpoint)
     if not allow:
         raise Forbidden()
